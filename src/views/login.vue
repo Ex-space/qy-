@@ -68,7 +68,7 @@
             </label>
             <div class="usernametip">密码8到20位</div>
           </div>
-          <button @click="">注册</button>
+          <button @click="handleRegister">注册</button>
         </form>
       </div>
       <div class="form-container sign-in-container">
@@ -88,7 +88,12 @@
             </label>
           </div>
           <div class="form-control login-margin">
-            <input type="password" v-model="loPassword"  required ref="loginmm" />
+            <input
+              type="password"
+              v-model="loPassword"
+              required
+              ref="loginmm"
+            />
             <label>
               <span style="transition-delay: 0ms">P</span
               ><span style="transition-delay: 50ms">a</span
@@ -101,7 +106,12 @@
             </label>
             <!-- <img @click="eyeChange" class="eye" :src="eyeSrc" alt="" /> -->
           </div>
-          <input type="button" value="登录" @click="" class="button" />
+          <input
+            type="button"
+            value="登录"
+            @click.native="handleLogin"
+            class="button"
+          />
         </form>
       </div>
 
@@ -110,7 +120,14 @@
           <div class="overlay-panel overlay-left">
             <h1>已有账号？</h1>
             <p>点击开始属于你的图书之旅</p>
-            <button class="ghost" id="signIn" @click="removeClass">登录</button>
+            <button
+              class="ghost"
+              id="signIn"
+              ref="goLogin"
+              @click="removeClass"
+            >
+              登录
+            </button>
           </div>
           <div class="overlay-panel overlay-right">
             <h1>没有账号?</h1>
@@ -127,6 +144,8 @@
 // import { getCurrentInstance, ref } from "vue";
 import { defineComponent, getCurrentInstance, ref } from "vue";
 import { ElNotification } from "element-plus";
+import { fa } from "element-plus/es/locale/index.js";
+import router from "../router";
 export default defineComponent({
   setup() {
     const loUsername = ref<string>("");
@@ -134,6 +153,11 @@ export default defineComponent({
     const reUsername = ref<string>("");
     const rePassWord = ref<string>("");
     const reStudentID = ref<string>("");
+    const reFlag = {
+      flag1: false,
+      flag2: false,
+      flag3: false,
+    };
     const { proxy, ctx } = getCurrentInstance();
     const _this = ctx;
     const addClass = () => {
@@ -178,12 +202,14 @@ export default defineComponent({
           type: "success",
           duration: 2000,
         });
+        reFlag.flag1 = true;
       } else {
         ElNotification({
           title: "请输入正确的手机号码！",
           type: "error",
           duration: 2000,
         });
+        reFlag.flag1 = false;
       }
     };
     const testStudentID = () => {
@@ -195,12 +221,14 @@ export default defineComponent({
           type: "success",
           duration: 2000,
         });
+        reFlag.flag2 = true;
       } else {
         ElNotification({
           title: "该学号无效！",
           type: "error",
           duration: 2000,
         });
+        reFlag.flag2 = false;
       }
     };
     const testPassword = () => {
@@ -212,9 +240,99 @@ export default defineComponent({
           type: "success",
           duration: 2000,
         });
+        reFlag.flag3 = true;
       } else {
         ElNotification({
           title: "密码必须在8~20位之间！",
+          type: "error",
+          duration: 2000,
+        });
+        reFlag.flag3 = false;
+      }
+    };
+    const handleLogin = async (e: any) => {
+      e.preventDefault();
+      if (loPassword && loUsername) {
+        await proxy.$http
+          .get(
+            `/user/login?username=${loUsername.value}&password=${loPassword.value}`
+          )
+          .then((res: any) => {
+            console.log(res);
+
+            if (res.data.code == 2) {
+              ElNotification({
+                title: "用户名或密码错误！",
+                type: "error",
+                duration: 2000,
+              });
+            } else if (res.data.code == 1) {
+              ElNotification({
+                title: "登录成功！",
+                type: "success",
+                duration: 2000,
+              });
+              window.localStorage.setItem("isLogin", "1");
+              console.log(res.data);
+
+              window.localStorage.setItem("auth", res.data.data.permission);
+              window.localStorage.setItem("token", res.data.data.token);
+              window.localStorage.setItem("userName", loUsername.value);
+              router.replace("index");
+            }
+          })
+          .catch((err: any) => {
+            console.error(err);
+          });
+      }
+    };
+    const handleRegister = async (e: any) => {
+      e.preventDefault();
+      if (reFlag.flag1 && reFlag.flag2 && reFlag.flag3) {
+        console.log();
+
+        await proxy.$http
+          .post(
+            "/user/regist",
+            {
+              username: reUsername.value,
+              password: rePassWord.value,
+              studentid: reStudentID.value,
+            },
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          )
+          .then((res: any) => {
+            if (res.data.code == 2) {
+              ElNotification({
+                title: "该用户名已被注册！",
+                type: "error",
+                duration: 2000,
+              });
+            } else if (res.data.code == 1) {
+              ElNotification({
+                title: "注册成功！",
+                type: "success",
+                duration: 2000,
+              });
+              _this.$refs.goLogin.click();
+            } else if (res.data.code == 0) {
+              ElNotification({
+                title: "您的账户无权限！",
+                type: "error",
+                duration: 2000,
+              });
+            }
+          })
+          .catch((err: any) => {
+            console.error(err);
+          });
+      } else {
+        ElNotification({
+          title: "注册信息不正确!",
           type: "error",
           duration: 2000,
         });
@@ -231,7 +349,9 @@ export default defineComponent({
       testUsername,
       debounce,
       testStudentID,
+      handleLogin,
       testPassword,
+      handleRegister,
     };
   },
 });

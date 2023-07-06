@@ -1,12 +1,23 @@
 <script setup lang="ts">
-import HelloWorld from "./components/HelloWorld.vue";
+import { routerKey } from "vue-router";
+const key = Math.random();
 </script>
 
 <template>
-  <div>
-    <router-view></router-view>
+  <div id="app-container">
+    <router-view :key:any="key"></router-view>
   </div>
 </template>
 
-<style lang="less" scoped>
+<style lang="less">
+#app-container {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+#app {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
 </style>
