@@ -22,7 +22,6 @@
         <el-table-column prop="bookName" label="书籍名称" width="150" />
         <el-table-column prop="bookId" label="书籍编号" width="140" />
         <el-table-column prop="bookAuthor" label="书籍作者" width="150" />
-        <el-table-column prop="type" label="类型" width="100" />
         <el-table-column prop="bookPress" label="书籍作者" width="150" />
         <el-table-column
           prop="bookPublicationDate"
@@ -64,11 +63,10 @@ const searchBook = async () => {
         res.data.data.forEach((item: any) => {
           resultBook.push(item);
         });
-        console.log(resultBook);
+        console.log(resultBook)
         resultBook.forEach((item: any) => {
           item.alive = item.alive ? "可借" : "不可借";
         });
-        console.log(resultBook);
       })
       .catch((err: any) => {
         console.error(err);

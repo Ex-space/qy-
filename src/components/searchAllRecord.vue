@@ -14,9 +14,9 @@
       >查询</el-button
     >
     <el-table :data="resultBook" border style="width: 100%" v-if="flag">
-      <el-table-column prop="userId" label="用户ID" width="100" />
+      <el-table-column prop="userId" label="用户ID" width="150" />
       <el-table-column prop="userName" label="用户名称" width="150" />
-      <el-table-column prop="logDate" label="更改日期" width="150" />
+      <el-table-column prop="logDate" label="更改日期" width="200" />
       <el-table-column prop="type" label="类型" width="150" />
     </el-table>
   </el-card>
@@ -37,6 +37,10 @@ const searchRecord = async () => {
     await proxy.$http
       .get(`/book/bookhistory?token=${token}&bookname=${bookName.value}`)
       .then((res: any) => {
+        resultBook.forEach((item: any) => {
+          resultBook.pop();
+        });
+        resultBook.pop();
         res.data.data.forEach((item: any) => {
           resultBook.push(item);
         });
